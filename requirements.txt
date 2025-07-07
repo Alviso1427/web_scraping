@@ -1,0 +1,22 @@
+# Core Web App Framework
+streamlit
+
+# Optional - If your client scripts use file handling, data, or automation
+pandas
+openpyxl
+numpy
+
+# For dynamic importing and safer script execution
+importlib-metadata; python_version<"3.8"
+
+# If using image or PDF processing (optional)
+Pillow
+PyPDF2
+pdfplumber
+
+# If using Excel processing
+xlrd
+xlsxwriter
+
+# For structured logging (optional but useful)
+loguru

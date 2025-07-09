@@ -91,10 +91,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-cols = st.columns(2)
+# Render scripts in vertical stack (one per row)
 
-for idx, (script_name, description) in enumerate(scripts.items()):
-    with cols[idx % 2]:
+    with st.container():
         with st.container():
             st.markdown(f"""
                 <div class='card'>

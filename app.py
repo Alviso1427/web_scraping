@@ -34,9 +34,7 @@ st.markdown("""
 with st.sidebar:
     st.markdown("""
         <h2>🛍️ Extractor</h2>
-        <a href="#home">🏠 Home</a>
-    """, unsafe_allow_html=True)
-        
+        <a href='#home'>🏠 Home</a>
     """, unsafe_allow_html=True)
 
 # --- Main Title ---

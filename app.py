@@ -36,8 +36,7 @@ with st.sidebar:
         <h2>🛍️ Extractor</h2>
         <a href="#home">🏠 Home</a>
     """, unsafe_allow_html=True)
-        <a href="#scripts">📜 Scripts</a>
-        <a href="#contact">📩 Contact</a>
+        
     """, unsafe_allow_html=True)
 
 # --- Main Title ---
@@ -104,7 +103,7 @@ for idx, (script_name, description) in enumerate(scripts.items()):
             """, unsafe_allow_html=True)
 
             uploaded_file = st.file_uploader("📥 Upload Excel with 'URL' and 'ProductID'", type=["xlsx"], key=script_name)
-            st.markdown("<a href='https://d1hcup9y1az71f.cloudfront.net/wft-errorupload/2025-07/37674862/Input_Template1752043017055.xlsx' download style='font-size:14px;'>📄 Download Template File</a>", unsafe_allow_html=True)
+            st.markdown("<a href='https://example.com/template.xlsx' download style='font-size:14px;'>📄 Download Template File</a>", unsafe_allow_html=True)
             run_button = st.button("▶️ Run Script", key=f"run_{script_name}")
 
             if uploaded_file and run_button:

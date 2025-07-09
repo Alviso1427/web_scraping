@@ -11,29 +11,34 @@ st.markdown("""
     <h2 style='background-color: #666666; color: white; padding: 12px; border-radius: 10px;'>🛍️ Product Info Extractor</h2>
 """, unsafe_allow_html=True)
 
-# Define script metadata
 scripts = {
-    "OG Metadata Extractor": "Extracts og:title, og:image, og:description, and <title> from each URL.",
-    "Image to Drive Formatter": "Extracts og:image and formats it as a Google Sheets IMAGE formula.",
-    "GearWrench ZIP Image Downloader": "Extracts the download link for a ZIP of product images.",
-    "NZSBW Full Product Extractor": "Extracts title, image, description, and bullet list of features.",
-    "Product Title Only (NZSBW)": "Extracts product title from <h2> tag with specific data-component-id.",
-    "Shiels Title + Image Extractor": "Extracts product title and full-sized image from Shiels product pages.",
-    "Smokemart Title + Image Extractor": "Extracts product title and image from Smokemart product pages.",
-    "Mitre10 Structured Description Extractor": "Extracts structured description including bullet points from Mitre10.",
-    "Total Tools Price Extractor": "Extracts price from Total Tools product pages."
+    "Info Extractor": "Extracts og:title, og:image, og:description and page <title>.",
+    "Image Extractor": "Fetches og:image and formats as Google Sheets IMAGE formula.",
+    "GearWrench ZIP Link": "Extracts downloadable ZIP image link from GearWrench.",
+    "NZSBW Full Extractor": "Extracts title, image, description, and bullet point features.",
+    "NZSBW Title Only": "Extracts only product title from a specific <h2> tag.",
+    "Shiels Meta Details": "Extracts Shiels title and og:image:secure_url.",
+    "Smokemart Extractor": "Extracts title and catalog product image from Smokemart.",
+    "Mitre10 Description Extractor": "Extracts structured product description from Mitre10.",
+    "Total Tools Price": "Extracts price using currency symbol from Total Tools.",
+    "Super Cheap Auto (YouTube IDs)": "Extracts all embedded YouTube video IDs.",
+    "Ramsau Pharma Image": "Extracts image from globalassets/commerce path.",
+    "Shaver Shop Image": "Extracts one or more image URLs depending on page type.",
+    "Toyworlds AU/NZ": "Extracts title, description, and images from toyworlds.com.au/.nz.",
+    "Cleverpatch + YouTube": "Extracts OG data and embedded YouTube video ID.",
+    "MikkoShoes Price": "Extracts current price from MikkoShoes men's product pages."
 }
 
-selected_script = None
+if "selected_script" not in st.session_state:
+    st.session_state.selected_script = None
 
 for script_name, script_desc in scripts.items():
     with st.container():
         if st.button(script_name):
-            st.session_state["selected_script"] = script_name
+            st.session_state.selected_script = script_name
 
-    if st.session_state.get("selected_script") == script_name:
+    if st.session_state.selected_script == script_name:
         st.markdown(f"**Description:** {script_desc}")
-
         uploaded_file = st.file_uploader("📥 Upload Excel file with 'URL' and 'ProductID' columns", type=["xlsx"], key=script_name)
         run_button = st.button("▶️ Run the Script", key=f"run_{script_name}")
 
@@ -48,97 +53,123 @@ for script_name, script_desc in scripts.items():
                         url = row['URL']
                         pid = row['ProductID']
                         result = {"ProductID": pid, "URL": url}
+
                         try:
                             r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
                             html = r.text
                             soup = BeautifulSoup(html, 'html.parser')
 
-                            if script_name == "OG Metadata Extractor":
-                                title = soup.find("meta", property="og:title")
-                                image = soup.find("meta", property="og:image")
-                                desc = soup.find("meta", property="og:description")
-                                page_title = soup.title.string if soup.title else ""
-                                result.update({
-                                    "Title": title['content'] if title else page_title,
-                                    "Image": image['content'] if image else "N/A",
-                                    "Description": desc['content'] if desc else "N/A"
-                                })
+                            if script_name == "Info Extractor":
+                                result["Title"] = soup.find("meta", property="og:title")['content'] if soup.find("meta", property="og:title") else (soup.title.string if soup.title else "N/A")
+                                result["Image"] = soup.find("meta", property="og:image")['content'] if soup.find("meta", property="og:image") else "N/A"
+                                result["Description"] = soup.find("meta", property="og:description")['content'] if soup.find("meta", property="og:description") else "N/A"
 
-                            elif script_name == "Image to Drive Formatter":
+                            elif script_name == "Image Extractor":
                                 image = soup.find("meta", property="og:image")
-                                image_url = image['content'] if image else ""
-                                formula = f'=IMAGE("{image_url}")' if image_url else "No image found"
-                                result.update({"ImageFormula": formula})
+                                result["ImageFormula"] = f'=IMAGE("{image["content"]}")' if image else "No image"
 
-                            elif script_name == "GearWrench ZIP Image Downloader":
+                            elif script_name == "GearWrench ZIP Link":
                                 match = re.search(r'<span class="download-images-link">[\s\S]*?<a\s+href="([^"]+)"', html)
                                 base = re.match(r'https://(www\.[^/]+)', url)
-                                domain = f'https://{base[1]}' if base else 'https://www.gearwrench.com.au'
-                                dl_url = domain + match.group(1) if match else "Not found"
-                                result.update({"ZIP Download URL": dl_url})
+                                domain = f'https://{base[1]}' if base else ''
+                                result["ZIP URL"] = domain + match.group(1) if match else "Not found"
 
-                            elif script_name == "NZSBW Full Product Extractor":
+                            elif script_name == "NZSBW Full Extractor":
                                 title = soup.find("meta", property="og:title")
                                 image = soup.find("meta", property="og:image")
-                                desc_tag = soup.find(attrs={"data-component-id": "product-description-content"})
-                                feature_tags = soup.find_all("li", attrs={"data-component-id": re.compile("product-description-features-")})
-                                features = "\n".join(["• " + tag.get_text(strip=True) for tag in feature_tags])
+                                desc = soup.find(attrs={"data-component-id": "product-description-content"})
+                                features = soup.find_all("li", attrs={"data-component-id": re.compile("product-description-features-")})
                                 result.update({
                                     "Title": title['content'] if title else "N/A",
                                     "Image": image['content'] if image else "N/A",
-                                    "Description": desc_tag.get_text(strip=True) if desc_tag else "N/A",
-                                    "Features": features
+                                    "Description": desc.get_text(strip=True) if desc else "N/A",
+                                    "Features": '\n'.join("• " + f.get_text(strip=True) for f in features)
                                 })
 
-                            elif script_name == "Product Title Only (NZSBW)":
-                                match = re.search(r'<h2[^>]*data-component-id=["\']product-product-title["\'][^>]*>([^<]{1,500})</h2>', html)
-                                result.update({"Title": match.group(1).strip() if match else "Title not found"})
+                            elif script_name == "NZSBW Title Only":
+                                match = re.search(r'<h2[^>]*data-component-id=["\']product-product-title["\'][^>]*>([^<]+)</h2>', html)
+                                result["Title"] = match.group(1).strip() if match else "Not found"
 
-                            elif script_name == "Shiels Title + Image Extractor":
-                                title = soup.select_one(".product-title-container h1")
-                                img = re.search(r'src=["\'](//www\.shiels\.com\.au/cdn/shop/[^"\']+_)[^"\']+\.jpg', html)
-                                img_url = f"https:{img.group(1)}1220x1220_crop_center.jpg" if img else "Image not found"
-                                result.update({
-                                    "Title": title.get_text(strip=True) if title else "Title not found",
-                                    "Image": img_url
-                                })
+                            elif script_name == "Shiels Meta Details":
+                                title = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', html)
+                                image = re.search(r'<meta[^>]+property=["\']og:image:secure_url["\'][^>]+content=["\']([^"\']+)', html)
+                                result["Title"] = title.group(1) if title else "N/A"
+                                result["Image"] = image.group(1) if image else "N/A"
 
-                            elif script_name == "Smokemart Title + Image Extractor":
+                            elif script_name == "Smokemart Extractor":
                                 title = soup.find("meta", property="og:title")
-                                img = re.search(r'src=\"([^\"]*/media/catalog/product/[^\"]+)\"', html)
-                                result.update({
-                                    "Title": title['content'] if title else "N/A",
-                                    "Image": img.group(1).replace("&amp;", "&") if img else "N/A"
-                                })
+                                img = re.search(r'src=\"([^\"]*/media/catalog/product/[^\"]+)', html)
+                                result["Title"] = title['content'] if title else "N/A"
+                                result["Image"] = img.group(1).replace("&amp;", "&") if img else "N/A"
 
-                            elif script_name == "Mitre10 Structured Description Extractor":
-                                desc_match = re.search(r'<div[^>]*class=["\'][^"\']*product attribute description[^"\']*["\'][^>]*>\s*<div[^>]*class=["\']value["\'][^>]*>([\s\S]*?)</div>', html)
-                                if desc_match:
-                                    content = desc_match.group(1)
-                                    ul_match = re.search(r'([\s\S]*?)<ul>([\s\S]*?)</ul>([\s\S]*)', content)
-                                    parts = []
-                                    if ul_match:
-                                        parts.append(BeautifulSoup(ul_match.group(1), 'html.parser').get_text(strip=True))
-                                        parts.extend(["• " + BeautifulSoup(li, 'html.parser').get_text(strip=True) for li in re.findall(r'<li>([\s\S]*?)</li>', ul_match.group(2))])
-                                        parts.append(BeautifulSoup(ul_match.group(3), 'html.parser').get_text(strip=True))
-                                    else:
-                                        parts.append(BeautifulSoup(content, 'html.parser').get_text(strip=True))
-                                    result["Description"] = "\n".join([p for p in parts if p])
+                            elif script_name == "Mitre10 Description Extractor":
+                                match = re.search(r'<div[^>]*class=["\']value["\'][^>]*>([\s\S]*?)</div>', html)
+                                if match:
+                                    raw = match.group(1)
+                                    bullets = ["• " + BeautifulSoup(li, 'html.parser').get_text(strip=True)
+                                               for li in re.findall(r'<li>([\s\S]*?)</li>', raw)]
+                                    clean = BeautifulSoup(raw, 'html.parser').get_text(" ", strip=True)
+                                    result["Description"] = clean + ("\n" + "\n".join(bullets) if bullets else "")
                                 else:
-                                    result["Description"] = "⚠️ Description not found"
+                                    result["Description"] = "Not found"
 
-                            elif script_name == "Total Tools Price Extractor":
-                                price_match = re.search(r'<span[^>]*class="currency-symbol"[^>]*>\$</span>\s*(\d+(\.\d{1,2})?)', html)
-                                result["Price"] = f"${price_match.group(1)}" if price_match else "Price not found"
+                            elif script_name == "Total Tools Price":
+                                match = re.search(r'<span[^>]*class="currency-symbol"[^>]*>\$</span>\s*(\d+(\.\d{1,2})?)', html)
+                                result["Price"] = f"${match.group(1)}" if match else "Not found"
+
+                            elif script_name == "Super Cheap Auto (YouTube IDs)":
+                                ids = set(re.findall(r'id="video-([a-zA-Z0-9_-]{11})"', html))
+                                for i, vid in enumerate(ids):
+                                    result[f"Video {i+1}"] = f"https://www.youtube.com/watch?v={vid}"
+                                if not ids:
+                                    result["Video"] = "No video found"
+
+                            elif script_name == "Ramsau Pharma Image":
+                                match = re.search(r'<img[^>]+src="(/globalassets/commerce/product/images/[^"?]+\.jpg)', html)
+                                if match:
+                                    base = re.match(r'^(https?://[^/]+)', url)
+                                    result["Image"] = base.group(1) + match.group(1) if base else match.group(1)
+                                else:
+                                    result["Image"] = "Not found"
+
+                            elif script_name == "Shaver Shop Image":
+                                images = re.findall(r'class="primary-image[^"]*"[^>]+(?:data-src|src)="([^"]+)"', html)
+                                for i, img in enumerate(images):
+                                    result[f"Image {i+1}"] = img
+                                if not images:
+                                    result["Image"] = "No images found"
+
+                            elif script_name == "Toyworlds AU/NZ":
+                                title = re.search(r'<h1[^>]*class="product-title-details"[^>]*>(.*?)</h1>', html)
+                                desc = re.search(r'<div[^>]+id="product-description"[\s\S]*?<div[^>]+class="tab-content attributedescription"[^>]*>([\s\S]*?)</div>', html)
+                                anchors = re.findall(r'<a[^>]+data-variants[^>]+href="([^"]+)"', html)
+                                imgs = ["https://www.toyworld.com.au" + p if not p.startswith("http") else p for p in anchors]
+                                result["Title"] = BeautifulSoup(title.group(1), 'html.parser').get_text(strip=True) if title else "Not found"
+                                result["Description"] = BeautifulSoup(desc.group(1), 'html.parser').get_text(strip=True) if desc else "Not found"
+                                result["Images"] = ", ".join(imgs) if imgs else "No images"
+
+                            elif script_name == "Cleverpatch + YouTube":
+                                title = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)', html)
+                                ogurl = re.search(r'<meta[^>]+property=["\']og:url["\'][^>]+content=["\']([^"\']+)', html)
+                                image = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)', html)
+                                yt = re.search(r'<iframe[^>]+src=["\'](?:https?:)?//www\.youtube\.com/embed/([^"?&]+)', html)
+                                result["OG Title"] = title.group(1) if title else "❌"
+                                result["OG URL"] = ogurl.group(1) if ogurl else "❌"
+                                result["OG Image"] = image.group(1) if image else "❌"
+                                result["YouTube"] = f"https://www.youtube.com/watch?v={yt.group(1)}" if yt else "❌"
+
+                            elif script_name == "MikkoShoes Price":
+                                match = re.search(r'id="ctl00_MainCentre_container_container_Content_31_StyleDetail1_lblCurrentPrice"[^>]*>\s*\$([\d,.]+)', html)
+                                result["Price"] = f"${match.group(1)}" if match else "Not found"
 
                         except Exception as e:
                             result["Error"] = str(e)
 
                         output.append(result)
 
-                result_df = pd.DataFrame(output)
-                st.success("✅ Script completed successfully!")
-                st.dataframe(result_df)
-                csv_buffer = BytesIO()
-                result_df.to_csv(csv_buffer, index=False)
-                st.download_button("⬇️ Download Results as CSV", data=csv_buffer.getvalue(), file_name="extracted_data.csv", mime="text/csv")
+                df_out = pd.DataFrame(output)
+                st.success("✅ Extraction complete")
+                st.dataframe(df_out)
+                csv = BytesIO()
+                df_out.to_csv(csv, index=False)
+                st.download_button("⬇️ Download CSV", data=csv.getvalue(), file_name="results.csv", mime="text/csv")

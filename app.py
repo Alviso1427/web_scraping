@@ -46,21 +46,21 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 scripts = {
-    "Info Extractor": "Extracts og:title, og:image, og:description and page <title>.",
-    "Image Extractor": "Fetches og:image and formats as Google Sheets IMAGE formula.",
-    "GearWrench ZIP Link": "Extracts downloadable ZIP image link from GearWrench.",
+    "Info Extractor": "The extractor specifically targets meta tags such as title, description, image, and other relevant info.",
+    "Image Extractor": "Fetches image and formats as Google Sheets IMAGE formula.",
+    "GearWrench ZIP Link": "Extracts downloadable ZIP image package link from GearWrench.",
     "NZSBW Full Extractor": "Extracts title, image, description, and bullet point features.",
-    "NZSBW Title Only": "Extracts only product title from a specific <h2> tag.",
-    "Shiels Meta Details": "Extracts Shiels title and og:image:secure_url.",
+    "NZSBW Title Only": "Extracts only product title from website.",
+    "Shiels Meta Details": "Extracts Shiels title and secure_url image URL.",
     "Smokemart Extractor": "Extracts title and catalog product image from Smokemart.",
     "Mitre10 Description Extractor": "Extracts structured product description from Mitre10.",
     "Total Tools Price": "Extracts price using currency symbol from Total Tools.",
-    "Super Cheap Auto (YouTube IDs)": "Extracts all embedded YouTube video IDs.",
-    "Ramsau Pharma Image": "Extracts image from globalassets/commerce path.",
-    "Shaver Shop Image": "Extracts one or more image URLs depending on page type.",
-    "Toyworlds AU/NZ": "Extracts title, description, and images from toyworlds.com.au/.nz.",
-    "Cleverpatch + YouTube": "Extracts OG data and embedded YouTube video ID.",
-    "MikkoShoes Price": "Extracts current price from MikkoShoes men's product pages."
+    "Super Cheap Auto (YouTube IDs)": "Extracts all embedded multi_YouTube video IDs URL.",
+    "Ramsay Pharma Image": "Extracts first image from website.",
+    "Shaver Shop Image": "Extracts one or more image URLs depending on page individual, search URL type.",
+    "Toyworlds AU/NZ": "Extracts title, description, and multi_images from toyworlds.com.au and .nz.",
+    "Cleverpatch + YouTube": "Extracts title, product URL, image url and embedded YouTube video url.",
+    "MikkoShoes Price": "Extracts current price from Mikko shoes and men's product pages."
 }
 
 # --- Styled Cards Layout ---
@@ -185,7 +185,7 @@ for idx, (script_name, description) in enumerate(scripts.items()):
                                     if not ids:
                                         result["Video"] = "No video found"
 
-                                elif script_name == "Ramsau Pharma Image":
+                                elif script_name == "Ramsay Pharma Image":
                                     match = re.search(r'<img[^>]+src="(/globalassets/commerce/product/images/[^"?]+\.jpg)', html)
                                     if match:
                                         base = re.match(r'^(https?://[^/]+)', url)

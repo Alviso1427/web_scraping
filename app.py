@@ -46,7 +46,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 scripts = {
-    "Info Extractor": "description: Provide information about a webpage to media platforms when the page is shared — title, image, SKU & description based on the website. URL - full url, Prod._ID - id",
+    "Info Extractor": "description: Provide information about a webpage to media platforms when the page is shared — title, image, SKU & description based on the website. URL - Direct url. notes: do not use short url or format url.",
     "Image Extractor": "Fetches og:image and formats as Google Sheets IMAGE formula.",
     "GearWrench ZIP Link": "Extracts downloadable ZIP image link from GearWrench.",
     "NZSBW Full Extractor": "Extracts title, image, description, and bullet point features.",

@@ -50,7 +50,7 @@ scripts = {
     "Image Extractor": "Description: Fetches the hero image of the product and formats as Google Sheets *IMAGE* formula. URL - Direct url. Note: do not use short url or format url.",
     "GearWrench ZIP Link": "Extracts downloadable ZIP image link from GearWrench.",
     "NZSBW Full Extractor": "Extracts title, image, description, and bullet point features.",
-    "NZSBW Title Only": "Extracts only product title from a specific <h2> tag.",
+    "NZSBW Title Only": "Extracts only product title from a specific tag.",
     "Shiels Meta Details": "Extracts Shiels title and image:secure_url. URL - Direct url. notes: do not use short url or format url.",
     "Smokemart Extractor": "Extracts title and catalog product image from Smokemart.",
     "Mitre10 Description Extractor": "Extracts structured product description from Mitre10.",

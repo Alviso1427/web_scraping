@@ -40,8 +40,8 @@ with st.sidebar:
 # --- Main Title ---
 st.markdown("""
     <div style='padding: 10px 0 30px;'>
-        <h1 style='font-size: 36px; color: #333;'>Script Dashboard</h1>
-        <hr style='margin-top: -10px;'>
+        <h1 style='font-size: 36px; color: #f20707;'>Script Dashboard</h1>
+        <hr style='margin-top: -14px;'>
     </div>
 """, unsafe_allow_html=True)
 
